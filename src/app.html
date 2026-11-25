@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#D9466A">
+<title>우리의 노선도</title>
+<style>
+:root{
+  --bg:#FFF7F9; --sea:#E4EEF6; --land:#FFFDF9; --land-edge:#E7DCD3; --north:#F2EEEA;
+  --ink:#2B2730; --ink2:#6B6470; --ink3:#A39AA6; --line:#EDE4E8; --card:#FFFFFF;
+  --pink:#D9466A; --pink2:#FBE6EB; --pink-ink:#B2304F; --star:#E0A100;
+  --river:#CFE0EE; --sea-ink:#8FAAC2; --lm-heri:#B0553F; --lm-nature:#3C8659; --lm-water:#2E77A8; --lm-modern:#5A5E7C;
+  --shadow:0 6px 24px rgba(80,30,50,.14); --halo:#FFFDF9;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1720; --sea:#141821; --land:#24212B; --land-edge:#3A3542; --north:#1E1B24;
+    --ink:#F3EEF4; --ink2:#C1B8C4; --ink3:#857C89; --line:#36303B; --card:#2A2630;
+    --pink:#FF7F9C; --pink2:#43242F; --pink-ink:#FFB3C4; --star:#FFCC33;
+    --river:#1C2532; --sea-ink:#4F6378; --lm-heri:#E3977E; --lm-nature:#7CC49A; --lm-water:#7AB4DE; --lm-modern:#AEB2D2;
+    --shadow:0 6px 24px rgba(0,0,0,.45); --halo:#24212B; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1720; --sea:#141821; --land:#24212B; --land-edge:#3A3542; --north:#1E1B24;
+  --ink:#F3EEF4; --ink2:#C1B8C4; --ink3:#857C89; --line:#36303B; --card:#2A2630;
+  --pink:#FF7F9C; --pink2:#43242F; --pink-ink:#FFB3C4; --star:#FFCC33;
+    --river:#1C2532; --sea-ink:#4F6378; --lm-heri:#E3977E; --lm-nature:#7CC49A; --lm-water:#7AB4DE; --lm-modern:#AEB2D2;
+  --shadow:0 6px 24px rgba(0,0,0,.45); --halo:#24212B; color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+#map{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:var(--sea)}
+
+/* 상단 */
+#top{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 0;pointer-events:none;z-index:10}
+#topRow{display:flex;align-items:center;gap:8px;max-width:640px;margin:0 auto;pointer-events:auto}
+#brand{display:flex;flex-direction:column;justify-content:center;background:var(--card);border-radius:16px;padding:6px 12px;box-shadow:var(--shadow);min-height:46px;cursor:pointer;border:0;text-align:left}
+#brand b{font-size:14px;font-weight:800;color:var(--pink);white-space:nowrap;display:flex;align-items:center;gap:6px}
+#brand .logo{width:20px;height:12px}
+.fab svg{width:22px;height:22px}
+#brand small{font-size:11px;color:var(--ink2);white-space:nowrap}
+#searchBox{flex:1;position:relative;min-width:0}
+#q{width:100%;height:46px;border-radius:16px;border:0;background:var(--card);box-shadow:var(--shadow);padding:0 40px 0 40px;font-size:15px;outline:none}
+#q::placeholder{color:var(--ink3)}
+#q::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+#searchBox .ico{position:absolute;left:13px;top:13px;width:20px;height:20px;color:var(--ink3);pointer-events:none}
+#qClear{position:absolute;right:6px;top:7px;width:32px;height:32px;border-radius:10px;border:0;background:transparent;color:var(--ink3);font-size:18px}
+#results{position:absolute;left:0;right:0;top:52px;background:var(--card);border-radius:16px;box-shadow:var(--shadow);max-height:min(60vh,420px);overflow:auto;padding:6px}
+.res{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:10px;border-radius:12px;text-align:left}
+.res:hover,.res.on{background:var(--pink2)}
+.res .nm{font-weight:700;font-size:15px}
+.res .sb{font-size:12px;color:var(--ink2)}
+.res .badges{margin-left:auto;display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:50%}
+.res .heart{color:var(--pink)}
+.empty{padding:16px;text-align:center;color:var(--ink2);font-size:14px}
+#chips{display:flex;gap:6px;max-width:640px;margin:8px auto 0;overflow-x:auto;pointer-events:auto;scrollbar-width:none;padding-bottom:4px}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:32px;padding:0 12px;border-radius:999px;border:0;background:var(--card);box-shadow:0 2px 10px rgba(80,30,50,.10);font-size:13px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.chip.on{background:var(--pink);color:#fff}
+.chip.tog{background:var(--card)}
+.chip.tog.off{opacity:.5;text-decoration:line-through}
+.sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+#focusBar{max-width:640px;margin:8px auto 0;pointer-events:auto;display:flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;padding:8px 10px;box-shadow:var(--shadow);font-size:13px}
+#focusBar .bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+#focusBar .bar i{display:block;height:100%;background:var(--pink);border-radius:3px}
+#focusBar button{border:0;background:transparent;font-size:16px;color:var(--ink2);width:28px;height:28px}
+
+/* 노선 배지 */
+.lb{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;color:#fff;font-size:11px;font-weight:800;line-height:1;white-space:nowrap;border:0}
+.lb.big{height:26px;min-width:26px;border-radius:13px;font-size:12px;padding:0 9px}
+
+/* 오른쪽 아래 버튼 */
+#fabs{position:fixed;right:calc(env(safe-area-inset-right) + 12px);bottom:calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;gap:10px;z-index:9}
+.fab{width:52px;height:52px;border-radius:18px;border:0;background:var(--card);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:20px;color:var(--ink)}
+.fab small{font-size:9.5px;font-weight:700;color:var(--ink2)}
+.fab.main{background:var(--pink);color:#fff}
+.fab.main small{color:#fff}
+#zoomBtns{position:fixed;left:calc(env(safe-area-inset-left) + 12px);bottom:calc(env(safe-area-inset-bottom) + 16px);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);z-index:9}
+#zoomBtns button{width:42px;height:42px;border:0;background:var(--card);font-size:20px;color:var(--ink2)}
+#zoomBtns button+button{border-top:1px solid var(--line)}
+
+/* 시트/모달 */
+#scrim{position:fixed;inset:0;background:rgba(20,10,20,.32);z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+#scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:0 -8px 30px rgba(60,20,40,.18);z-index:21;
+  max-height:72vh;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom)}
+.sheet.on{transform:none}
+.sheet.full{max-height:none;top:0;border-radius:0;padding-top:env(safe-area-inset-top)}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:8px auto 0;flex:none}
+.sheetHead{padding:10px 18px 12px;flex:none;display:flex;align-items:flex-start;gap:10px}
+.sheetHead h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.sheetHead .sub{font-size:12.5px;color:var(--ink2);margin-top:2px}
+.sheetHead .x{margin-left:auto;width:36px;height:36px;border-radius:12px;border:0;background:var(--card);font-size:18px;color:var(--ink2);flex:none}
+.sheetBody{overflow:auto;padding:0 16px 20px;flex:1;-webkit-overflow-scrolling:touch}
+.badgeRow{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.actRow{display:flex;gap:8px;margin:4px 0 14px}
+.btn{height:46px;border-radius:14px;border:0;padding:0 16px;font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.pri{background:var(--pink);color:#fff;flex:1}
+.btn.sec{background:var(--card);color:var(--ink);box-shadow:0 1px 0 var(--line) inset,0 0 0 1px var(--line) inset}
+.btn.sec.on{color:var(--star)}
+.btn.danger{background:transparent;color:#D6455D}
+.btn.sm{height:36px;font-size:13px;padding:0 12px;border-radius:11px}
+.rec{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 1px 0 var(--line)}
+.rec .d{font-size:12.5px;color:var(--pink-ink);font-weight:700}
+.rec .t{font-size:16px;font-weight:800;margin:3px 0 0}
+.rec .m{font-size:14.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-top:6px;color:var(--ink)}
+.rec .ops{display:flex;gap:4px;margin-top:8px;justify-content:flex-end}
+.rec .ops button{border:0;background:transparent;color:var(--ink3);font-size:13px;padding:6px 8px;border-radius:8px}
+.ph{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px;border-radius:12px;overflow:hidden}
+.ph.n1{grid-template-columns:1fr}
+.ph.n2{grid-template-columns:1fr 1fr}
+.ph img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--line);cursor:zoom-in}
+.ph.n1 img{aspect-ratio:4/3}
+.emptyRec{text-align:center;padding:26px 10px;color:var(--ink2);font-size:14px;line-height:1.7}
+.emptyRec .stamp{width:54px;height:54px;margin:0 auto 10px;display:block;color:var(--pink);opacity:.8}
+.vtag{display:inline-block;font-size:10.5px;font-weight:800;color:var(--pink-ink);background:var(--pink2);border-radius:6px;padding:2px 5px;margin-left:6px;vertical-align:2px}
+
+/* 편집기 */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.inp{width:100%;border:0;border-radius:14px;background:var(--card);padding:12px 14px;font-size:15px;outline:none;box-shadow:0 0 0 1px var(--line) inset}
+.inp:focus{box-shadow:0 0 0 2px var(--pink) inset}
+textarea.inp{min-height:120px;resize:vertical;line-height:1.6}
+.phEdit{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.phEdit .cell{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--line)}
+.phEdit .cell img{width:100%;height:100%;object-fit:cover;display:block}
+.phEdit .cell button{position:absolute;right:3px;top:3px;width:24px;height:24px;border-radius:12px;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:13px;line-height:1}
+.phEdit .add{aspect-ratio:1;border-radius:12px;border:2px dashed var(--pink);background:var(--pink2);color:var(--pink-ink);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.phEdit .add small{font-size:11px}
+.busy{font-size:12px;color:var(--ink2);margin-top:6px}
+
+/* 앨범/통계 */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border-radius:16px;padding:12px 8px;text-align:center}
+.stat b{display:block;font-size:22px;font-weight:800;color:var(--pink)}
+.stat span{font-size:12px;color:var(--ink2)}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;height:38px;border-radius:12px;border:0;background:var(--card);font-weight:700;font-size:14px;color:var(--ink2)}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.month{font-size:13px;font-weight:800;color:var(--ink2);margin:16px 2px 8px}
+.alb{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:16px;padding:10px;margin-bottom:8px;border:0;width:100%;text-align:left}
+.alb .th{width:62px;height:62px;border-radius:12px;background:var(--pink2);flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px}
+.alb .th img{width:100%;height:100%;object-fit:cover}
+.alb .tx{min-width:0;flex:1}
+.alb .tx b{display:block;font-size:15px}
+.alb .tx span{display:block;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:10px 12px;margin-bottom:6px;border:0;width:100%;text-align:left}
+.prog .nm{font-size:14px;font-weight:700;min-width:0;flex:1}
+.prog .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px}
+.prog .bar i{display:block;height:100%;border-radius:3px}
+.prog .num{font-size:12px;color:var(--ink2);white-space:nowrap}
+
+/* 사진 보기 */
+#viewer{position:fixed;inset:0;background:#000;z-index:40;display:flex;align-items:center;justify-content:center}
+#viewer img{max-width:100%;max-height:100%;object-fit:contain}
+#viewer button{position:absolute;border:0;background:rgba(255,255,255,.14);color:#fff;width:44px;height:44px;border-radius:22px;font-size:20px}
+#vClose{top:calc(env(safe-area-inset-top) + 12px);right:12px}
+#vPrev{left:10px;top:50%;margin-top:-22px}
+#vNext{right:10px;top:50%;margin-top:-22px}
+#vCount{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);left:0;right:0;text-align:center;color:#fff;font-size:13px}
+
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;transition:.25s;z-index:50;pointer-events:none;max-width:88vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+@media (min-width:900px){
+  .sheet:not(.full){left:auto;right:16px;bottom:16px;top:auto;width:400px;border-radius:24px;max-height:calc(100vh - 32px)}
+  .sheet:not(.full).on{transform:none}
+  .sheet:not(.full){transform:translateX(120%)}
+  .sheet.full{max-width:720px;top:16px;bottom:16px;border-radius:24px}
+}
+</style>
+</head>
+<body>
+<canvas id="map" aria-label="전국 철도 노선도"></canvas>
+
+<div id="top">
+  <div id="topRow">
+    <button id="brand" title="우리 설정"><b><svg class="logo" viewBox="0 0 20 12" aria-hidden="true"><path d="M2 9 L8 3 L12 7 L18 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="2" cy="9" r="2" fill="currentColor"/><circle cx="18" cy="2" r="2" fill="currentColor"/></svg>우리의 노선도</b><small id="dday">눌러서 우리 정보 넣기</small></button>
+    <div id="searchBox">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="역·노선·명소 검색 (초성 OK)" autocomplete="off" enterkeyhint="search">
+      <button id="qClear" class="hidden" aria-label="지우기">✕</button>
+      <div id="results" class="hidden"></div>
+    </div>
+  </div>
+  <div id="chips"></div>
+  <div id="focusBar" class="hidden"></div>
+</div>
+
+<div id="zoomBtns"><button id="zIn" aria-label="확대">＋</button><button id="zOut" aria-label="축소">－</button></div>
+<div id="fabs">
+  <button class="fab" id="fabRandom" title="데이트 역 뽑기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="15" cy="9" r="1.3" fill="currentColor"/><circle cx="9" cy="15" r="1.3" fill="currentColor"/></svg><small>뽑기</small></button>
+  <button class="fab main" id="fabAlbum" title="추억 모아보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M3 17l5-4 4 3 3-2 6 4"/><path d="M7 5l1.5-2h7L17 5"/></svg><small id="fabCount">추억</small></button>
+</div>
+
+<div id="scrim"></div>
+
+<!-- 역 시트 -->
+<section class="sheet" id="stSheet" aria-label="역 정보">
+  <div class="grab"></div>
+  <div class="sheetHead">
+    <div style="min-width:0">
+      <h2 id="stName"></h2>
+      <div class="sub" id="stSub"></div>
+      <div class="badgeRow" id="stBadges"></div>
+    </div>
+    <button class="x" data-close aria-label="닫기">✕</button>
+  </div>
+  <div class="sheetBody">
+    <div class="actRow">
+      <button class="btn pri" id="addRec">＋ 추억 남기기</button>
+      <button class="btn sec" id="wishBtn">☆ 가고 싶어</button>
+    </div>
+    <div id="recList"></div>
+  </div>
+</section>
+
+<!-- 랜드마크 -->
+<section class="sheet" id="lmSheet" aria-label="명소 정보">
+  <div class="grab"></div>
+  <div class="sheetHead">
+    <canvas id="lmIcon" width="96" height="96" style="width:48px;height:48px;flex:none"></canvas>
+    <div style="min-width:0">
+      <h2 id="lmName"></h2>
+      <div class="sub" id="lmDesc"></div>
+    </div>
+    <button class="x" data-close aria-label="닫기">✕</button>
+  </div>
+  <div class="sheetBody">
+    <div class="month" style="margin-top:0">가까운 역</div>
+    <div id="lmNear"></div>
+  </div>
+</section>
+
+<!-- 기록 편집 -->
+<section class="sheet full" id="edSheet" aria-label="추억 기록">
+  <div class="sheetHead">
+    <div><h2 id="edTitle">추억 남기기</h2><div class="sub" id="edSub"></div></div>
+    <button class="x" data-close aria-label="닫기">✕</button>
+  </div>
+  <div class="sheetBody">
+    <div class="field"><label for="edDate">날짜</label><input class="inp" type="date" id="edDate"></div>
+    <div class="field"><label for="edHead">제목 (선택)</label><input class="inp" id="edHead" maxlength="60" placeholder="예) 첫 데이트, 비 오는 날 산책"></div>
+    <div class="field"><label>사진</label>
+      <div class="phEdit" id="edPhotos"></div>
+      <input type="file" id="edFile" accept="image/*" multiple class="hidden">
+      <div class="busy hidden" id="edBusy">사진 정리 중…</div>
+    </div>
+    <div class="field"><label for="edMemo">메모</label><textarea class="inp" id="edMemo" placeholder="오늘 뭐 했는지, 뭐 먹었는지, 무슨 얘기 했는지…"></textarea></div>
+    <div class="actRow"><button class="btn pri" id="edSave">저장하기</button></div>
+    <div style="text-align:center"><button class="btn danger sm hidden" id="edDel">이 추억 지우기</button></div>
+  </div>
+</section>
+
+<!-- 앨범 -->
+<section class="sheet full" id="albSheet" aria-label="추억 모아보기">
+  <div class="sheetHead">
+    <div><h2>우리의 추억</h2><div class="sub" id="albSub"></div></div>
+    <button class="x" data-close aria-label="닫기">✕</button>
+  </div>
+  <div class="sheetBody">
+    <div class="stats" id="albStats"></div>
+    <div class="tabs" id="albTabs">
+      <button data-t="time" class="on">타임라인</button><button data-t="lines">노선 정복</button><button data-t="wish">가고 싶은 역</button>
+    </div>
+    <div id="albBody"></div>
+  </div>
+</section>
+
+<!-- 설정 -->
+<section class="sheet full" id="setSheet" aria-label="설정">
+  <div class="sheetHead">
+    <div><h2>우리 설정</h2><div class="sub">이름이랑 처음 만난 날을 적어줘</div></div>
+    <button class="x" data-close aria-label="닫기">✕</button>
+  </div>
+  <div class="sheetBody">
+    <div class="field"><label for="setA">나</label><input class="inp" id="setA" maxlength="12" placeholder="이름 / 애칭"></div>
+    <div class="field"><label for="setB">너</label><input class="inp" id="setB" maxlength="12" placeholder="이름 / 애칭"></div>
+    <div class="field"><label for="setDay">처음 만난 날 (사귄 날)</label><input class="inp" type="date" id="setDay"></div>
+    <div class="actRow"><button class="btn pri" id="setSave">저장</button></div>
+    <div class="field" style="margin-top:22px"><label>백업 · 옮기기</label>
+      <div style="font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:10px">사진과 메모는 <b>이 폰 안에만</b> 저장돼. 앱을 지우기 전이나 폰을 바꿀 때 백업 파일로 저장해 두고, 다른 폰에서 불러오면 합쳐져.</div>
+      <div class="actRow"><button class="btn sec" id="bkOut" style="flex:1">백업 저장</button><button class="btn sec" id="bkIn" style="flex:1">백업 불러오기</button></div>
+      <input type="file" id="bkFile" accept=".json,application/json,text/plain" class="hidden">
+      <div class="busy hidden" id="bkBusy"></div>
+    </div>
+    <div style="font-size:11.5px;color:var(--ink3);line-height:1.6;margin-top:18px">역 위치: Wikidata(CC0) · 해안선: Natural Earth · 강·명소 위치는 대략적인 위치야. 노선도는 실제 지리 좌표 기준이라 역 간격이 실제와 비슷해.</div>
+  </div>
+</section>
+
+<div id="viewer" class="hidden"><img id="vImg" alt=""><button id="vClose" aria-label="닫기">✕</button><button id="vPrev" aria-label="이전">‹</button><button id="vNext" aria-label="다음">›</button><div id="vCount"></div></div>
+<div id="toast"></div>
+
+<script id="netData" type="application/json">/*__NETWORK__*/</script>
+<script id="geoData" type="application/json">/*__KOREA__*/</script>
+<script id="rivData" type="application/json">/*__RIVERS__*/</script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const NET = JSON.parse($("#netData").textContent);
+const GEO = JSON.parse($("#geoData").textContent);
+const RIV = JSON.parse($("#rivData").textContent);
+const ST = NET.stations, LN = NET.lines;
+const LINE = Object.fromEntries(LN.map(l => [l.id, l]));
+const ST_BY_ID = Object.fromEntries(ST.map((s, i) => [s.id, i]));
+
+/* ───────── 투영 ───────── */
+const LAT0 = 36.3, LON0 = 127.8, KX = 100 * Math.cos(LAT0 * Math.PI / 180), KY = 100;
+const wx = lon => (lon - LON0) * KX, wy = lat => -(lat - LAT0) * KY;
+ST.forEach((s, i) => { s.i = i; s.wx = wx(s.x); s.wy = wy(s.y); s.lines = s.l.map(id => LINE[id]); s.metro = s.lines.some(l => l.kind === "metro"); });
+const disp = s => s.n.endsWith("역") ? s.n : s.n + "역";
+const subOf = s => s.sub || (s.metro ? (s.lines.find(l => l.kind === "metro").region) : "기차역");
+const LAND = (GEO.south || []).map(r => r.map(([x, y]) => [wx(x), wy(y)]));
+const NORTH = (GEO.north || []).map(r => r.map(([x, y]) => [wx(x), wy(y)]));
+
+/* ───────── 랜드마크 · 강 · 바다 ───────── */
+// t: 1=전국에서 보임, 2=지역 확대, 3=도시 확대 / k: 그림 종류 / c: 색 계열
+const LANDMARKS = [
+  ["N서울타워", "남산 꼭대기 전망대. 자물쇠 걸고 야경 보기", 37.5512, 126.9882, 1, "tower", "modern"],
+  ["경복궁", "한복 입고 궁 산책, 밤 개장 때 특히 예뻐", 37.5796, 126.9770, 2, "palace", "heri"],
+  ["롯데월드타워", "서울스카이 전망대 · 석촌호수 산책", 37.5126, 127.1025, 2, "spire", "modern"],
+  ["63빌딩", "여의도 한강공원 바로 옆", 37.5198, 126.9402, 3, "slab", "modern"],
+  ["DDP", "동대문디자인플라자 전시 · 야경", 37.5665, 127.0092, 3, "dome", "modern"],
+  ["북한산", "백운대 등산 데이트", 37.6587, 126.9780, 3, "mountain", "nature"],
+  ["서울숲", "피크닉 · 성수동 카페 거리", 37.5444, 127.0374, 3, "tree", "nature"],
+  ["뚝섬 한강공원", "자전거 타고 한강 따라 달리기", 37.5293, 127.0700, 3, "wave", "water"],
+  ["수원화성", "성곽길 걷기 · 행궁동 카페", 37.2871, 127.0118, 2, "gate", "heri"],
+  ["송도 센트럴파크", "수상택시 · 고층 빌딩 야경", 37.3925, 126.6390, 2, "skyline", "modern"],
+  ["에버랜드", "놀이공원 하루 데이트", 37.2939, 127.2022, 2, "wheel", "modern"],
+  ["남이섬", "메타세쿼이아 길", 37.7905, 127.5257, 2, "tree", "nature"],
+  ["두물머리", "남한강과 북한강이 만나는 곳, 일출 명소", 37.5330, 127.3180, 2, "tree", "nature"],
+  ["임진각", "평화누리공원 바람개비 언덕", 37.8890, 126.7400, 2, "pinwheel", "modern"],
+  ["광안대교", "광안리 해변에서 보는 다리 야경", 35.1475, 129.1300, 1, "bridge", "water"],
+  ["해운대", "해변 산책 · 블루라인파크 해변열차", 35.1587, 129.1604, 2, "beach", "water"],
+  ["감천문화마을", "알록달록 골목길 사진 찍기", 35.0975, 129.0106, 2, "houses", "heri"],
+  ["부산타워", "용두산공원 · 남포동 먹거리", 35.1009, 129.0324, 3, "tower", "modern"],
+  ["대왕암공원", "울산 바닷가 출렁다리", 35.4920, 129.4350, 2, "rocks", "water"],
+  ["83타워", "이월드 놀이공원 · 대구 야경", 35.8533, 128.5664, 1, "tower", "modern"],
+  ["한빛탑", "대전 엑스포과학공원 음악분수", 36.3757, 127.3872, 1, "needle", "modern"],
+  ["공산성", "공주 백제 성곽길", 36.4640, 127.1250, 2, "gate", "heri"],
+  ["무등산", "광주 서석대 주상절리", 35.1343, 126.9886, 1, "mountain", "nature"],
+  ["죽녹원", "담양 대나무 숲길", 35.3270, 126.9860, 2, "reeds", "nature"],
+  ["첨성대", "경주 황리단길 · 대릉원 산책", 35.8347, 129.2190, 1, "cheom", "heri"],
+  ["불국사", "석가탑 · 다보탑", 35.7900, 129.3320, 2, "palace", "heri"],
+  ["전주 한옥마을", "한옥 골목 · 비빔밥 · 길거리 음식", 35.8150, 127.1530, 1, "palace", "heri"],
+  ["여수 밤바다", "돌산대교 야경 · 해상케이블카", 34.7300, 127.7400, 1, "bridge", "water"],
+  ["순천만 습지", "갈대밭 노을", 34.8880, 127.5090, 2, "reeds", "nature"],
+  ["목포 유달산", "해상케이블카 · 근대 거리", 34.7880, 126.3720, 2, "mountain", "nature"],
+  ["대천해수욕장", "보령 머드축제 · 짚트랙", 36.3150, 126.5130, 2, "beach", "water"],
+  ["강릉 커피거리", "안목해변 카페에서 바다 보며 커피", 37.7720, 128.9480, 1, "cup", "water"],
+  ["정동진", "기차역 앞 바다 해돋이", 37.6900, 129.0340, 2, "sun", "water"],
+  ["설악산", "속초 · 권금성 케이블카", 38.1190, 128.4654, 1, "mountain", "nature"],
+  ["대관령 양떼목장", "초원 · 풍력발전기", 37.6880, 128.7520, 2, "windmill", "nature"],
+  ["도담삼봉", "단양 강 위 세 봉우리", 36.9990, 128.3440, 2, "rocks", "water"],
+  ["하회마을", "안동 전통 마을 · 부용대", 36.5390, 128.5180, 1, "palace", "heri"],
+  ["호미곶", "포항 '상생의 손' 해돋이", 36.0770, 129.5680, 1, "hand", "water"],
+  ["한라산", "제주 백록담", 33.3617, 126.5292, 1, "mountain", "nature"],
+  ["성산일출봉", "제주 동쪽 해돋이 명소", 33.4580, 126.9420, 2, "crater", "nature"],
+].map(([n, d, y, x, t, k, c]) => ({ n, d, y, x, t, k, c, wx: wx(x), wy: wy(y) }));
+const RIVERS = Object.values(RIV).map(r => r.map(([y, x]) => [wx(x), wy(y)]));
+const SEAS = [["동해", 37.3, 129.6], ["서해", 36.25, 126.05], ["남해", 34.15, 127.7]].map(([n, y, x]) => ({ n, wx: wx(x), wy: wy(y) }));
+
+/* 그림: 24×24 칸, 가운데가 (0,0) */
+const ICON = {
+  tower(c) { c.moveTo(-6, 11); c.lineTo(6, 11); c.moveTo(-3, 11); c.lineTo(-1, -2); c.moveTo(3, 11); c.lineTo(1, -2);
+    c.rect(-3.5, -5, 7, 3); c.moveTo(0, -5); c.lineTo(0, -11); c.moveTo(-2, -8); c.lineTo(2, -8); },
+  spire(c) { c.moveTo(-4, 11); c.lineTo(-3, -2); c.lineTo(-1, -11); c.lineTo(1, -11); c.lineTo(3, -2); c.lineTo(4, 11); c.closePath(); c.moveTo(0, -9); c.lineTo(0, 11); },
+  slab(c) { c.moveTo(-5, 11); c.lineTo(-5, -7); c.lineTo(4, -11); c.lineTo(4, 11); c.closePath(); for (let y = -4; y < 10; y += 3.5) { c.moveTo(-5, y); c.lineTo(4, y - 1.5); } },
+  dome(c) { c.moveTo(-11, 8); c.bezierCurveTo(-10, -4, -2, -8, 4, -5); c.bezierCurveTo(9, -3, 11, 3, 11, 8); c.closePath(); c.moveTo(-6, 8); c.bezierCurveTo(-5, 0, 1, -3, 6, 1); },
+  mountain(c) { c.moveTo(-12, 9); c.lineTo(-4, -4); c.lineTo(-1, 0); c.lineTo(4, -9); c.lineTo(12, 9); c.closePath(); c.moveTo(1.5, -5); c.lineTo(4, -3); c.lineTo(6.2, -5); },
+  crater(c) { c.moveTo(-12, 9); c.lineTo(-6, -3); c.lineTo(-3, -6); c.lineTo(3, -6); c.lineTo(6, -3); c.lineTo(12, 9); c.closePath(); c.moveTo(-3, -6); c.quadraticCurveTo(0, -2, 3, -6); },
+  tree(c) { c.moveTo(-6, 0); c.arc(-3, -1, 5, Math.PI, 0); c.moveTo(-8, -1); c.arc(-3, 1, 5, Math.PI * 0.9, Math.PI * 2.1); c.moveTo(9, 2); c.arc(4, -3, 6, 0, Math.PI * 2);
+    c.moveTo(-3, 6); c.lineTo(-3, 11); c.moveTo(4, 3); c.lineTo(4, 11); c.moveTo(-9, 11); c.lineTo(10, 11); },
+  wave(c) { for (const y of [-3, 3, 9]) { c.moveTo(-11, y); for (let x = -11; x < 11; x += 5.5) c.quadraticCurveTo(x + 1.4, y - 3, x + 2.75, y), c.quadraticCurveTo(x + 4.1, y + 3, x + 5.5, y); } },
+  gate(c) { c.moveTo(-11, 11); c.lineTo(-11, 0); for (let x = -11; x < 11; x += 4.4) { c.lineTo(x, -2); c.lineTo(x + 2.2, -2); c.lineTo(x + 2.2, 0); c.lineTo(x + 4.4, 0); }
+    c.lineTo(11, 11); c.closePath(); c.moveTo(-4, 11); c.lineTo(-4, 6); c.arc(0, 6, 4, Math.PI, 0); c.lineTo(4, 11);
+    c.moveTo(-7, -6); c.quadraticCurveTo(-3, -6, -2, -10); c.lineTo(2, -10); c.quadraticCurveTo(3, -6, 7, -6); },
+  palace(c) { c.moveTo(-12, -1); c.quadraticCurveTo(-6, -1.5, -4, -7); c.lineTo(4, -7); c.quadraticCurveTo(6, -1.5, 12, -1); c.closePath();
+    c.moveTo(-8, -1); c.lineTo(-8, 8); c.moveTo(-3, -1); c.lineTo(-3, 8); c.moveTo(3, -1); c.lineTo(3, 8); c.moveTo(8, -1); c.lineTo(8, 8); c.moveTo(-11, 9); c.lineTo(11, 9); },
+  skyline(c) { c.rect(-11, -2, 6, 13); c.rect(-4, -10, 6, 21); c.rect(3, -5, 7, 16); c.moveTo(-1, -7); c.lineTo(-1, 9); },
+  wheel(c) { c.moveTo(8, -3); c.arc(0, -3, 8, 0, Math.PI * 2); for (let a = 0; a < 6; a++) { c.moveTo(0, -3); c.lineTo(Math.cos(a * 1.047) * 8, -3 + Math.sin(a * 1.047) * 8); }
+    c.moveTo(-5, 11); c.lineTo(0, -3); c.lineTo(5, 11); c.moveTo(-8, 11); c.lineTo(8, 11); },
+  pinwheel(c) { c.moveTo(0, -3); c.lineTo(0, 11); for (let a = 0; a < 4; a++) { const r = a * Math.PI / 2, cs = Math.cos(r), sn = Math.sin(r);
+    c.moveTo(0, -3); c.lineTo(cs * 8, -3 + sn * 8); c.lineTo(cs * 8 - sn * 4, -3 + sn * 8 + cs * 4); c.closePath(); } },
+  windmill(c) { c.moveTo(-1, 11); c.lineTo(0, -4); c.lineTo(1, 11); for (let a = 0; a < 3; a++) { const r = -Math.PI / 2 + a * 2.094; c.moveTo(0, -4); c.lineTo(Math.cos(r) * 10, -4 + Math.sin(r) * 10); }
+    c.moveTo(-12, 11); c.quadraticCurveTo(-6, 7, 0, 9); c.quadraticCurveTo(6, 7, 12, 11); },
+  bridge(c) { c.moveTo(-12, 4); c.lineTo(12, 4); c.moveTo(-5, 7); c.lineTo(-5, -9); c.moveTo(5, 7); c.lineTo(5, -9);
+    c.moveTo(-12, 4); c.quadraticCurveTo(-8, -2, -5, -9); c.quadraticCurveTo(0, 2, 5, -9); c.quadraticCurveTo(8, -2, 12, 4);
+    c.moveTo(-12, 10); c.quadraticCurveTo(-9, 8, -6, 10); c.quadraticCurveTo(-3, 12, 0, 10); c.quadraticCurveTo(3, 8, 6, 10); c.quadraticCurveTo(9, 12, 12, 10); },
+  beach(c) { c.moveTo(-9, -2); c.arc(0, -2, 9, Math.PI, 0); c.lineTo(-9, -2); c.moveTo(0, -2); c.lineTo(2, 8);
+    c.moveTo(-12, 10); c.quadraticCurveTo(-8, 7, -4, 10); c.quadraticCurveTo(0, 13, 4, 10); c.quadraticCurveTo(8, 7, 12, 10); },
+  sun(c) { c.moveTo(7, 3); c.arc(0, 3, 7, Math.PI, 0, true); c.lineTo(-7, 3); c.closePath(); for (let a = 0; a < 5; a++) { const r = Math.PI + (a + 0.5) * Math.PI / 5; c.moveTo(Math.cos(r) * 9.5, 3 + Math.sin(r) * 9.5); c.lineTo(Math.cos(r) * 12, 3 + Math.sin(r) * 12); }
+    c.moveTo(-12, 3); c.lineTo(12, 3); c.moveTo(-9, 7); c.lineTo(9, 7); c.moveTo(-5, 10.5); c.lineTo(5, 10.5); },
+  houses(c) { c.rect(-11, 2, 6, 7); c.rect(-5, -3, 6, 12); c.rect(1, 0, 5, 9); c.rect(6, -5, 5, 14); c.moveTo(-11, 2); c.lineTo(-8, -1); c.lineTo(-5, 2); c.moveTo(-12, 11); c.lineTo(12, 11); },
+  needle(c) { c.moveTo(-5, 11); c.lineTo(0, -11); c.lineTo(5, 11); c.moveTo(3.3, -1); c.arc(0, -1, 3.3, 0, Math.PI * 2); c.moveTo(-8, 11); c.lineTo(8, 11); },
+  cheom(c) { c.moveTo(-6.5, 10); c.quadraticCurveTo(-5.5, 0, -3, -6); c.lineTo(3, -6); c.quadraticCurveTo(5.5, 0, 6.5, 10); c.closePath(); c.rect(-3.5, -10, 7, 4);
+    c.rect(-1.5, -1, 3, 3); c.moveTo(-5.2, 5); c.lineTo(5.2, 5); c.moveTo(-4.2, -3); c.lineTo(4.2, -3); c.moveTo(-9, 10); c.lineTo(9, 10); },
+  reeds(c) { for (const [x, h] of [[-8, 13], [-4, 17], [0, 15], [4, 19], [8, 14]]) { c.moveTo(x, 11); c.quadraticCurveTo(x + 1, 11 - h / 2, x + 2, 11 - h); c.moveTo(x + 2, 11 - h + 3); c.lineTo(x + 2, 11 - h); } c.moveTo(-11, 11); c.lineTo(11, 11); },
+  rocks(c) { c.moveTo(-11, 6); c.lineTo(-8, -1); c.lineTo(-5, 6); c.moveTo(-5, 6); c.lineTo(-1, -7); c.lineTo(4, 6); c.moveTo(4, 6); c.lineTo(7, 0); c.lineTo(10, 6);
+    c.moveTo(-12, 6); c.lineTo(12, 6); c.moveTo(-9, 9.5); c.lineTo(9, 9.5); },
+  cup(c) { c.moveTo(-7, -1); c.lineTo(-6, 9); c.lineTo(5, 9); c.lineTo(6, -1); c.closePath(); c.moveTo(6, 1); c.quadraticCurveTo(11, 1, 10, 5); c.quadraticCurveTo(9, 7, 5.5, 7);
+    c.moveTo(-3, -4); c.quadraticCurveTo(-5, -7, -3, -10); c.moveTo(1, -4); c.quadraticCurveTo(-1, -7, 1, -10); c.moveTo(-10, 11); c.lineTo(9, 11); },
+  hand(c) { c.moveTo(-5, 8); c.lineTo(-6, -2); c.lineTo(-6, -9); c.moveTo(-3, 8); c.lineTo(-3, -11); c.moveTo(0, 8); c.lineTo(0, -11); c.moveTo(3, 8); c.lineTo(3, -9);
+    c.moveTo(5, 8); c.lineTo(5, 0); c.lineTo(9, -4); c.moveTo(-12, 9); c.quadraticCurveTo(-6, 7, 0, 9); c.quadraticCurveTo(6, 11, 12, 9); },
+};
+function drawLandmark(L, x, y, size, alpha) {
+  const k = size / 24, col = COL["lm-" + L.c];
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+  ctx.beginPath(); ctx.arc(0, 0, 15, 0, 7); ctx.globalAlpha = alpha * 0.9; ctx.fillStyle = COL.land; ctx.fill();
+  ctx.globalAlpha = alpha * 0.35; ctx.lineWidth = 1.2; ctx.strokeStyle = col; ctx.stroke();
+  ctx.beginPath(); ICON[L.k](ctx);
+  ctx.globalAlpha = alpha * 0.18; ctx.fillStyle = col; ctx.fill();
+  ctx.globalAlpha = alpha; ctx.lineWidth = 1.7; ctx.strokeStyle = col; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke();
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+const lmTier = () => cam.s < 2.2 ? 1 : cam.s < 10 ? 2 : 3;
+const lmSize = () => clamp(20 + Math.log2(cam.s) * 3.5, 22, 38);
+
+const STAMP = `<svg class="stamp" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="20" stroke-dasharray="3 3"/><circle cx="24" cy="24" r="14"/><path d="M14 27 L21 19 L27 25 L34 17" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ───────── 저장소 (IndexedDB) ───────── */
+const DB = (() => {
+  let dbp;
+  function open() {
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const r = indexedDB.open("ourmap", 1);
+      r.onupgradeneeded = () => {
+        const d = r.result;
+        d.createObjectStore("records", { keyPath: "id" });
+        d.createObjectStore("photos", { keyPath: "id" });
+        d.createObjectStore("meta", { keyPath: "k" });
+      };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  async function tx(store, mode, fn) {
+    const d = await open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(store, mode), os = t.objectStore(store);
+      let out; const r = fn(os);
+      if (r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  }
+  return {
+    all: s => tx(s, "readonly", os => os.getAll()),
+    get: (s, k) => tx(s, "readonly", os => os.get(k)),
+    put: (s, v) => tx(s, "readwrite", os => os.put(v)),
+    del: (s, k) => tx(s, "readwrite", os => os.delete(k)),
+  };
+})();
+
+let RECS = [];             // 모든 기록
+let WISH = new Set();      // 가고 싶은 역 id
+let SETTINGS = { a: "", b: "", day: "" };
+const byStation = () => { const m = new Map(); RECS.forEach(r => { if (!m.has(r.station)) m.set(r.station, []); m.get(r.station).push(r); }); return m; };
+let REC_MAP = new Map();
+function reindex() { REC_MAP = byStation(); updateCounts(); draw(); }
+const visited = s => REC_MAP.has(s.id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+const urlCache = new Map();
+async function photoURL(id, kind = "thumb") {
+  const key = id + ":" + kind;
+  if (urlCache.has(key)) return urlCache.get(key);
+  const p = await DB.get("photos", id);
+  if (!p) return "";
+  const u = URL.createObjectURL(p[kind] || p.full);
+  urlCache.set(key, u); return u;
+}
+
+/* ───────── 캔버스 지도 ───────── */
+const cv = $("#map");
+let ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+const cam = { x: 0, y: 0, s: 1 };
+let showMetro = true, showRail = true, focusLine = null, selected = null, COL = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  ["sea", "land", "land-edge", "north", "ink", "ink2", "pink", "star", "halo", "card", "river", "sea-ink", "lm-heri", "lm-nature", "lm-water", "lm-modern"].forEach(k => COL[k] = cs.getPropertyValue("--" + k).trim());
+}
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  draw();
+}
+const sx = x => (x - cam.x) * cam.s + W / 2, sy = y => (y - cam.y) * cam.s + H / 2;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+let raf = 0;
+function draw() { if (!raf) raf = requestAnimationFrame(render); }
+
+function poly(rings) {
+  ctx.beginPath();
+  for (const r of rings) { r.forEach(([x, y], k) => k ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y))); ctx.closePath(); }
+}
+function lineVisible(l) { return l.kind === "metro" ? showMetro : showRail; }
+
+function render() {
+  raf = 0;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = COL.sea; ctx.fillRect(0, 0, W, H);
+  const s = cam.s, z = Math.log2(s);
+  // 땅
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  poly(NORTH); ctx.fillStyle = COL.north; ctx.fill();
+  poly(LAND); ctx.strokeStyle = COL.river; ctx.lineWidth = 7; ctx.stroke();
+  ctx.fillStyle = COL.land; ctx.fill(); ctx.strokeStyle = COL["land-edge"]; ctx.lineWidth = 1; ctx.stroke();
+  // 강
+  ctx.strokeStyle = COL.river; ctx.lineWidth = clamp(0.85 * s, 1.2, 60);
+  ctx.beginPath(); for (const r of RIVERS) r.forEach(([x, y], k) => k ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y))); ctx.stroke();
+  // 바다 이름
+  if (s < 4) {
+    ctx.font = `600 ${clamp(13 + z * 2, 13, 18)}px "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif`;
+    ctx.fillStyle = COL["sea-ink"]; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const m of SEAS) { const t = [...m.n].join("  "); ctx.fillText(t, sx(m.wx), sy(m.wy)); }
+    ctx.textAlign = "left";
+  }
+  // 랜드마크 (노선 아래)
+  const tier = lmTier(), lms = lmSize();
+  for (const L of LANDMARKS) {
+    if (L.t > tier) continue;
+    const x = sx(L.wx), y = sy(L.wy);
+    if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
+    drawLandmark(L, x, y, lms, focusLine ? 0.35 : 1);
+  }
+
+  const wMetro = clamp(1.4 + z * 0.7, 1.6, 6.5), wRail = clamp(1.2 + z * 0.55, 1.4, 5);
+  const order = LN.filter(lineVisible).sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "rail" ? -1 : 1));
+  const drawLine = (l, alpha) => {
+    ctx.globalAlpha = alpha;
+    const w = (l.kind === "metro" ? wMetro : wRail) * (focusLine === l.id ? 1.35 : 1);
+    ctx.beginPath();
+    for (const p of l.paths) p.forEach((i, k) => { const t = ST[i]; k ? ctx.lineTo(sx(t.wx), sy(t.wy)) : ctx.moveTo(sx(t.wx), sy(t.wy)); });
+    ctx.strokeStyle = l.color; ctx.lineWidth = w; ctx.setLineDash([]); ctx.stroke();
+    if (l.kind === "rail") { ctx.strokeStyle = COL.land; ctx.lineWidth = w * 0.42; ctx.setLineDash([w * 2.2, w * 2.2]); ctx.stroke(); ctx.setLineDash([]); }
+  };
+  for (const l of order) if (l.id !== focusLine) drawLine(l, focusLine ? 0.16 : 1);
+  if (focusLine && lineVisible(LINE[focusLine])) drawLine(LINE[focusLine], 1);
+  ctx.globalAlpha = 1;
+
+  // 역
+  const rBase = clamp(s * 0.3, 1.3, 6.2);
+  const pad = 40, vis = [];
+  for (const t of ST) {
+    const ls = t.lines.filter(lineVisible);
+    if (!ls.length) continue;
+    const x = sx(t.wx), y = sy(t.wy);
+    if (x < -pad || y < -pad || x > W + pad || y > H + pad) continue;
+    const dim = focusLine && !t.l.includes(focusLine);
+    vis.push({ t, x, y, ls, dim });
+  }
+  for (const v of vis) {
+    const { t, x, y, ls, dim } = v;
+    ctx.globalAlpha = dim ? 0.25 : 1;
+    const xfer = ls.length > 1;
+    const r = xfer ? rBase * 1.3 + 0.6 : rBase;
+    v.r = r;
+    if (visited(t)) continue;  // 하트는 아래에서
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 7);
+    ctx.fillStyle = COL.land; ctx.fill();
+    ctx.lineWidth = clamp(r * 0.45, 1, 2.4);
+    ctx.strokeStyle = xfer ? COL.ink : ls[0].color; ctx.stroke();
+    if (WISH.has(t.id)) { ctx.beginPath(); ctx.arc(x, y, r + 2.6, 0, 7); ctx.strokeStyle = COL.star; ctx.lineWidth = 2; ctx.stroke(); }
+  }
+  // 다녀온 역: 도장
+  for (const v of vis) {
+    if (!visited(v.t)) continue;
+    ctx.globalAlpha = v.dim ? 0.35 : 1;
+    const r = clamp(v.r * 1.25 + 1.5, 4.5, 9.5);
+    ctx.beginPath(); ctx.arc(v.x, v.y, r + 2.2, 0, 7); ctx.strokeStyle = COL.pink; ctx.lineWidth = 1.2; ctx.setLineDash([2, 2]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(v.x, v.y, r, 0, 7); ctx.fillStyle = COL.pink; ctx.fill();
+    ctx.beginPath(); ctx.arc(v.x, v.y, r * 0.38, 0, 7); ctx.fillStyle = COL.land; ctx.fill();
+    v.r = r + 2;
+  }
+  // 선택된 역
+  if (selected) {
+    const t = ST[selected], x = sx(t.wx), y = sy(t.wy);
+    ctx.globalAlpha = 1;
+    ctx.beginPath(); ctx.arc(x, y, 13, 0, 7); ctx.strokeStyle = COL.pink; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, 18, 0, 7); ctx.strokeStyle = COL.pink; ctx.globalAlpha = 0.35; ctx.lineWidth = 2; ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  ctx.globalAlpha = 1;
+  drawLabels(vis);
+}
+
+/* 라벨: 우선순위 순으로 겹치지 않게 배치 */
+const CELL = 64;
+function drawLabels(vis) {
+  const s = cam.s;
+  if (s < 2.5) {
+    // 넓게 볼 때: 기차 주요역 + 우리가 간 역만
+    vis = vis.filter(v => { const r = v.ls.filter(l => l.kind === "rail"); return r.length >= 2 || r.some(l => l.short === "KTX") || visited(v.t) || selected === v.t.i || WISH.has(v.t.id); });
+  }
+  if (focusLine) vis = vis.filter(v => v.t.l.includes(focusLine) || visited(v.t) || selected === v.t.i);
+  const pri = v => (selected === v.t.i ? 1e4 : 0) + (visited(v.t) ? 500 : 0) + (WISH.has(v.t.id) ? 300 : 0) + (focusLine && v.t.l.includes(focusLine) ? 200 : 0) - (v.dim ? 400 : 0) + v.ls.length * 20 + (v.t.metro ? 5 : 0);
+  vis.sort((a, b) => pri(b) - pri(a));
+  const grid = new Map(), boxes = [];
+  const fs = clamp(9.5 + Math.log2(s) * 0.9, 10.5, 14);
+  ctx.font = `700 ${fs}px "Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif`;
+  ctx.textBaseline = "middle";
+  const hit = (b) => {
+    const x0 = Math.floor(b[0] / CELL), x1 = Math.floor(b[2] / CELL), y0 = Math.floor(b[1] / CELL), y1 = Math.floor(b[3] / CELL);
+    for (let gx = x0; gx <= x1; gx++) for (let gy = y0; gy <= y1; gy++) {
+      const c = grid.get(gx + "," + gy); if (!c) continue;
+      for (const o of c) if (b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]) return true;
+    }
+    return false;
+  };
+  const add = (b) => {
+    const x0 = Math.floor(b[0] / CELL), x1 = Math.floor(b[2] / CELL), y0 = Math.floor(b[1] / CELL), y1 = Math.floor(b[3] / CELL);
+    for (let gx = x0; gx <= x1; gx++) for (let gy = y0; gy <= y1; gy++) { const k = gx + "," + gy; if (!grid.has(k)) grid.set(k, []); grid.get(k).push(b); }
+  };
+  // 점 · 랜드마크 그림도 장애물로
+  { const tier = lmTier(), h = lmSize() * 0.6; for (const L of LANDMARKS) if (L.t <= tier) { const x = sx(L.wx), y = sy(L.wy); add([x - h, y - h, x + h, y + h, 2]); } }
+  for (const v of vis) { const r = (v.r || 3) + 1; add([v.x - r, v.y - r, v.x + r, v.y + r, 1]); }
+  let budget = s < 2.5 ? 60 : 400;
+  for (const v of vis) {
+    if (budget-- <= 0) break;
+    const txt = v.t.n, w = ctx.measureText(txt).width, h = fs + 2, r = (v.r || 3) + 3;
+    const cands = [
+      [v.x + r, v.y - h / 2, "left"], [v.x - r - w, v.y - h / 2, "left"],
+      [v.x - w / 2, v.y - r - h, "left"], [v.x - w / 2, v.y + r, "left"],
+    ];
+    for (const [lx, ly] of cands) {
+      const b = [lx - 2, ly, lx + w + 2, ly + h];
+      // 자기 점과의 충돌은 무시
+      const own = [v.x - (v.r || 3) - 1, v.y - (v.r || 3) - 1, v.x + (v.r || 3) + 1, v.y + (v.r || 3) + 1];
+      if (hitExcept(b, own)) continue;
+      add(b);
+      ctx.globalAlpha = v.dim ? 0.4 : 1;
+      ctx.lineWidth = 3.2; ctx.strokeStyle = COL.halo; ctx.lineJoin = "round";
+      ctx.strokeText(txt, lx, ly + h / 2);
+      ctx.fillStyle = visited(v.t) ? COL.pink : COL.ink;
+      ctx.fillText(txt, lx, ly + h / 2);
+      break;
+    }
+  }
+  // 랜드마크 이름 (역 이름에 양보)
+  const tier = lmTier(), lms = lmSize(), lfs = clamp(fs - 1, 10, 12.5);
+  ctx.font = `700 ${lfs}px "Pretendard","Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif`;
+  for (const L of LANDMARKS) {
+    if (L.t > tier) continue;
+    const x = sx(L.wx), y = sy(L.wy) + lms * 0.62 + lfs / 2 + 1;
+    if (x < -60 || y < -20 || x > W + 60 || y > H + 20) continue;
+    const w = ctx.measureText(L.n).width, b = [x - w / 2 - 2, y - lfs / 2 - 1, x + w / 2 + 2, y + lfs / 2 + 1];
+    if (hit(b)) continue;
+    add(b);
+    ctx.globalAlpha = focusLine ? 0.45 : 1;
+    ctx.textAlign = "center"; ctx.lineWidth = 3; ctx.strokeStyle = COL.halo;
+    ctx.strokeText(L.n, x, y); ctx.fillStyle = COL["lm-" + L.c]; ctx.fillText(L.n, x, y); ctx.textAlign = "left";
+  }
+  ctx.globalAlpha = 1;
+  function hitExcept(b, own) {
+    const x0 = Math.floor(b[0] / CELL), x1 = Math.floor(b[2] / CELL), y0 = Math.floor(b[1] / CELL), y1 = Math.floor(b[3] / CELL);
+    for (let gx = x0; gx <= x1; gx++) for (let gy = y0; gy <= y1; gy++) {
+      const c = grid.get(gx + "," + gy); if (!c) continue;
+      for (const o of c) {
+        if (o[4] === 1 && o[0] === own[0] && o[1] === own[1]) continue;
+        if (b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]) return true;
+      }
+    }
+    return false;
+  }
+}
+
+/* ───────── 카메라 ───────── */
+const S_MIN = 0.35, S_MAX = 260;
+function zoomAt(px, py, f) {
+  const ns = clamp(cam.s * f, S_MIN, S_MAX); f = ns / cam.s;
+  const wxp = (px - W / 2) / cam.s + cam.x, wyp = (py - H / 2) / cam.s + cam.y;
+  cam.s = ns; cam.x = wxp - (px - W / 2) / ns; cam.y = wyp - (py - H / 2) / ns;
+  draw();
+}
+let anim = null;
+function flyTo(x, y, s, ms = 520, oy = 0) {
+  const a = { x: cam.x, y: cam.y, s: cam.s }, b = { x, y: y + oy / s, s: clamp(s, S_MIN, S_MAX) };
+  const t0 = performance.now();
+  cancelAnimationFrame(anim);
+  if (ms <= 0) { Object.assign(cam, b); draw(); return; }
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / ms), e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const ls = Math.log(a.s) + (Math.log(b.s) - Math.log(a.s)) * e;
+    cam.s = Math.exp(ls); cam.x = a.x + (b.x - a.x) * e; cam.y = a.y + (b.y - a.y) * e;
+    render();
+    if (t < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+function fitBox(x0, y0, x1, y1, ms) {
+  const top = 130, bottom = 30, side = 24;
+  const s = Math.min((W - side * 2) / Math.max(x1 - x0, 0.01), (H - top - bottom) / Math.max(y1 - y0, 0.01));
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - ((top - bottom) / 2) / s;
+  flyTo(cx, cy, s, ms);
+}
+function fitStations(list, ms, trim = 0) {
+  const xs = list.map(t => t.wx).sort((a, b) => a - b), ys = list.map(t => t.wy).sort((a, b) => a - b);
+  const k = Math.floor(list.length * trim), e = list.length - 1 - k;
+  fitBox(xs[k], ys[k], xs[e], ys[e], ms);
+}
+function focusStation(i, ms) {
+  const t = ST[i];
+  const s = Math.max(cam.s, t.metro ? 22 : 9);
+  const sheetH = innerWidth >= 900 ? 0 : Math.min(H * 0.72, 520);
+  const offset = innerWidth >= 900 ? 0 : (sheetH / 2 - 40);
+  const ox = innerWidth >= 900 ? 200 / s : 0;
+  flyTo(t.wx + ox, t.wy, s, ms, offset);
+}
+
+/* 입력: 드래그·핀치·휠·탭 */
+const ptrs = new Map();
+let gest = null, moved = false, downT = 0, downXY = null, lastTap = 0;
+cv.addEventListener("pointerdown", e => {
+  cv.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  cancelAnimationFrame(anim);
+  if (ptrs.size === 1) { moved = false; downT = performance.now(); downXY = { x: e.clientX, y: e.clientY }; }
+  gest = null;
+  hideResults();
+});
+cv.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const p = ptrs.get(e.pointerId), nx = e.clientX, ny = e.clientY;
+  if (ptrs.size === 1) {
+    if (Math.hypot(nx - downXY.x, ny - downXY.y) > 6) moved = true;
+    if (moved) { cam.x -= (nx - p.x) / cam.s; cam.y -= (ny - p.y) / cam.s; draw(); }
+    p.x = nx; p.y = ny;
+  } else if (ptrs.size === 2) {
+    moved = true;
+    const [a, b] = [...ptrs.values()];
+    const before = { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+    p.x = nx; p.y = ny;
+    const [c, d] = [...ptrs.values()];
+    const after = { d: Math.hypot(c.x - d.x, c.y - d.y), mx: (c.x + d.x) / 2, my: (c.y + d.y) / 2 };
+    cam.x -= (after.mx - before.mx) / cam.s; cam.y -= (after.my - before.my) / cam.s;
+    if (before.d > 0) zoomAt(after.mx, after.my, after.d / before.d);
+    draw();
+  }
+});
+function endPtr(e) {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if (ptrs.size === 0 && !moved && performance.now() - downT < 450) {
+    const now = performance.now();
+    const hitI = pick(e.clientX, e.clientY);
+    const lm = hitI == null ? pickLandmark(e.clientX, e.clientY) : null;
+    if (hitI != null) openStation(hitI);
+    else if (lm) openLandmark(lm);
+    else if (now - lastTap < 300) zoomAt(e.clientX, e.clientY, 2);
+    lastTap = now;
+  }
+}
+cv.addEventListener("pointerup", endPtr);
+cv.addEventListener("pointercancel", e => ptrs.delete(e.pointerId));
+cv.addEventListener("wheel", e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018))); }, { passive: false });
+function pick(px, py) {
+  let best = null, bd = 24;
+  for (const t of ST) {
+    if (!t.lines.some(lineVisible)) continue;
+    const d = Math.hypot(sx(t.wx) - px, sy(t.wy) - py);
+    if (d < bd) { bd = d; best = t.i; }
+  }
+  return best;
+}
+function pickLandmark(px, py) {
+  const tier = lmTier(), r = lmSize() * 0.62; let best = null, bd = r + 6;
+  for (const L of LANDMARKS) { if (L.t > tier) continue; const d = Math.hypot(sx(L.wx) - px, sy(L.wy) - py); if (d < bd) { bd = d; best = L; } }
+  return best;
+}
+$("#zIn").onclick = () => zoomAt(W / 2, H / 2, 1.8);
+$("#zOut").onclick = () => zoomAt(W / 2, H / 2, 1 / 1.8);
+
+/* ───────── 지역/레이어 칩 ───────── */
+const REGIONS = [
+  ["전국", null], ["수도권", "수도권"], ["부산·울산", "부산"], ["대구", "대구"], ["대전", "대전"], ["광주", "광주"],
+];
+function regionStations(r) {
+  if (!r) return ST;
+  const ids = new Set(LN.filter(l => l.region === r).map(l => l.id));
+  return ST.filter(t => t.l.some(id => ids.has(id)));
+}
+function buildChips() {
+  const c = $("#chips"); c.innerHTML = "";
+  REGIONS.forEach(([lab, r], k) => {
+    const b = document.createElement("button"); b.className = "chip" + (k === 0 ? " on" : ""); b.textContent = lab;
+    b.onclick = () => { c.querySelectorAll(".chip:not(.tog)").forEach(x => x.classList.remove("on")); b.classList.add("on"); fitStations(regionStations(r), 650, r === "수도권" ? 0.07 : 0.02); };
+    c.appendChild(b);
+  });
+  const sep = document.createElement("span"); sep.className = "sep"; c.appendChild(sep);
+  const t1 = document.createElement("button"); t1.className = "chip tog"; t1.textContent = "전철";
+  t1.onclick = () => { showMetro = !showMetro; if (!showMetro && !showRail) { showRail = true; t2.classList.remove("off"); } t1.classList.toggle("off", !showMetro); draw(); };
+  const t2 = document.createElement("button"); t2.className = "chip tog"; t2.textContent = "기차";
+  t2.onclick = () => { showRail = !showRail; if (!showMetro && !showRail) { showMetro = true; t1.classList.remove("off"); } t2.classList.toggle("off", !showRail); draw(); };
+  c.append(t1, t2);
+}
+
+/* ───────── 검색 (초성 지원) ───────── */
+const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const chosung = str => [...str].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join("");
+const clean = s => s.replace(/[\s·.()\-]/g, "").toLowerCase();
+ST.forEach(t => { t.key = clean(t.n); t.cho = chosung(t.key); });
+LN.forEach(l => { l.key = clean(l.name + l.short); l.cho = chosung(l.key); });
+const isCho = q => /^[ㄱ-ㅎ]+$/.test(q);
+function badge(l, big) {
+  return `<span class="lb${big ? " big" : ""}" style="background:${l.color}" title="${l.name}">${l.short}</span>`;
+}
+function search(q) {
+  q = clean(q); if (!q) return [];
+  const qq = q.replace(/역$/, "") || q;
+  const out = [];
+  const cho = isCho(qq);
+  for (const t of ST) {
+    let sc = -1;
+    if (cho) { const k = t.cho.indexOf(qq); if (k >= 0) sc = (k === 0 ? 50 : 20) - t.cho.length * 0.1; }
+    else { const k = t.key.indexOf(qq); if (k >= 0) sc = (t.key === qq ? 100 : k === 0 ? 60 : 30) - t.key.length * 0.1; }
+    if (sc >= 0) out.push({ type: "st", t, sc: sc + t.l.length * 0.5 + (visited(t) ? 3 : 0) });
+  }
+  for (const L of LANDMARKS) {
+    const k = clean(L.n), hitM = cho ? chosung(k).includes(qq) : k.includes(qq);
+    if (hitM) out.push({ type: "lm", L, sc: k.startsWith(qq) || chosung(k).startsWith(qq) ? 58 : 35 });
+    else if (!cho && qq.length >= 2 && clean(L.d).includes(qq)) out.push({ type: "lm", L, sc: 25 });
+  }
+  for (const l of LN) {
+    const hitL = cho ? l.cho.includes(qq) : l.key.includes(qq);
+    if (hitL) out.push({ type: "ln", l, sc: 40 });
+  }
+  return out.sort((a, b) => b.sc - a.sc).slice(0, 30);
+}
+let resSel = -1, resList = [];
+function showResults() {
+  const v = $("#q").value; $("#qClear").classList.toggle("hidden", !v);
+  const box = $("#results");
+  if (!v.trim()) { box.classList.add("hidden"); return; }
+  resList = search(v); resSel = resList.length ? 0 : -1;
+  box.innerHTML = resList.length ? resList.map((r, k) => r.type === "st"
+    ? `<button class="res${k === 0 ? " on" : ""}" data-k="${k}"><div><div class="nm">${esc(disp(r.t))}${visited(r.t) ? '<span class="vtag">다녀옴</span>' : ""}</div><div class="sb">${esc(subOf(r.t))}</div></div><div class="badges">${r.t.lines.map(l => badge(l)).join("")}</div></button>`
+    : r.type === "lm" ? `<button class="res${k === 0 ? " on" : ""}" data-k="${k}"><div style="min-width:0"><div class="nm">${esc(r.L.n)}<span class="vtag" style="background:transparent;color:var(--lm-${r.L.c});box-shadow:0 0 0 1px currentColor inset">명소</span></div><div class="sb">${esc(r.L.d)}</div></div></button>`
+    : `<button class="res${k === 0 ? " on" : ""}" data-k="${k}"><div><div class="nm">${badge(r.l)} ${esc(r.l.name)}</div><div class="sb">노선 전체 보기 · ${lineStations(r.l).length}개 역</div></div></button>`
+  ).join("") : `<div class="empty">'${esc(v)}'에 맞는 역이나 장소가 없어</div>`;
+  box.classList.remove("hidden");
+}
+function hideResults() { $("#results").classList.add("hidden"); }
+function chooseResult(k) {
+  const r = resList[k]; if (!r) return;
+  hideResults(); $("#q").blur();
+  if (r.type === "st") { openStation(r.t.i, true); }
+  else if (r.type === "lm") openLandmark(r.L);
+  else setFocusLine(r.l.id, true);
+}
+$("#q").addEventListener("input", showResults);
+$("#q").addEventListener("focus", showResults);
+$("#q").addEventListener("keydown", e => {
+  const items = [...document.querySelectorAll("#results .res")];
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); if (!items.length) return;
+    resSel = (resSel + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+    items.forEach((el, k) => el.classList.toggle("on", k === resSel)); items[resSel].scrollIntoView({ block: "nearest" });
+  } else if (e.key === "Enter") { e.preventDefault(); if (resSel >= 0) chooseResult(resSel); }
+  else if (e.key === "Escape") { hideResults(); $("#q").blur(); }
+});
+$("#results").addEventListener("click", e => { const b = e.target.closest(".res"); if (b) chooseResult(+b.dataset.k); });
+$("#qClear").onclick = () => { $("#q").value = ""; showResults(); $("#q").focus(); };
+
+/* ───────── 노선 집중 보기 ───────── */
+const lineStations = l => { const set = new Set(); l.paths.forEach(p => p.forEach(i => set.add(i))); return [...set].map(i => ST[i]); };
+function setFocusLine(id, fit) {
+  focusLine = id;
+  const fb = $("#focusBar");
+  if (!id) { fb.classList.add("hidden"); draw(); return; }
+  const l = LINE[id], sts = lineStations(l), v = sts.filter(visited).length;
+  if (l.kind === "metro" && !showMetro) { showMetro = true; document.querySelectorAll(".chip.tog")[0].classList.remove("off"); }
+  if (l.kind === "rail" && !showRail) { showRail = true; document.querySelectorAll(".chip.tog")[1].classList.remove("off"); }
+  fb.innerHTML = `${badge(l)} <b style="white-space:nowrap">${esc(l.name)}</b><span class="bar"><i style="width:${(v / sts.length * 100).toFixed(1)}%;background:${l.color}"></i></span><span style="white-space:nowrap;color:var(--ink2)">${v}/${sts.length}역</span><button aria-label="닫기">✕</button>`;
+  fb.querySelector("button").onclick = () => setFocusLine(null);
+  fb.classList.remove("hidden");
+  if (fit) { closeAll(); fitStations(sts, 650); }
+  draw();
+}
+
+/* ───────── 시트 관리 + 뒤로가기 ───────── */
+const stack = [];
+function openSheet(el) {
+  if (!stack.includes(el)) stack.push(el);
+  el.classList.add("on");
+  $("#scrim").classList.toggle("on", stack.some(x => x.classList.contains("full")));
+}
+function closeSheet(el) {
+  el.classList.remove("on");
+  const k = stack.indexOf(el); if (k >= 0) stack.splice(k, 1);
+  $("#scrim").classList.toggle("on", stack.some(x => x.classList.contains("full")));
+  if (el.id === "stSheet") { selected = null; draw(); }
+}
+function closeAll() { [...stack].forEach(closeSheet); }
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => closeSheet(b.closest(".sheet")));
+$("#scrim").onclick = () => { const top = stack[stack.length - 1]; if (top) closeSheet(top); };
+window.__onBack = () => {
+  if (!$("#viewer").classList.contains("hidden")) { closeViewer(); return true; }
+  if (!$("#results").classList.contains("hidden")) { hideResults(); return true; }
+  const top = stack[stack.length - 1];
+  if (top) { closeSheet(top); return true; }
+  if (focusLine) { setFocusLine(null); return true; }
+  return false;
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape" && document.activeElement !== $("#q")) window.__onBack(); });
+
+/* ───────── 랜드마크 시트 ───────── */
+function kmBetween(a, b) { return Math.hypot((a.wx - b.wx) * 111 / KY * 1, (a.wy - b.wy) * 111 / KY); }
+function openLandmark(L) {
+  closeAll();
+  $("#lmName").textContent = L.n; $("#lmDesc").textContent = L.d;
+  const ic = $("#lmIcon"), c2 = ic.getContext("2d");
+  c2.setTransform(1, 0, 0, 1, 0, 0); c2.clearRect(0, 0, 96, 96);
+  c2.setTransform(2, 0, 0, 2, 0, 0);
+  // drawLandmark은 전역 ctx를 쓰므로 잠깐 바꿔서 그림
+  ctxSwap(c2, () => drawLandmark(L, 24, 24, 34, 1));
+  const near = ST.filter(t => t.lines.length).map(t => ({ t, d: kmBetween(t, L) })).sort((a, b) => a.d - b.d).slice(0, 4);
+  $("#lmNear").innerHTML = near.map(({ t, d }) => `<button class="prog" data-st="${t.i}"><div class="nm">${esc(disp(t))}${visited(t) ? '<span class="vtag">다녀옴</span>' : ""}<div style="font-size:12px;color:var(--ink2);font-weight:500;margin-top:3px">${d < 1.6 ? `걸어서 약 ${Math.max(1, Math.round(d * 1000 / 70))}분` : `약 ${d.toFixed(1)}km`}</div></div><span style="display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end">${t.lines.map(l => badge(l)).join("")}</span></button>`).join("");
+  $("#lmNear").querySelectorAll("[data-st]").forEach(b => b.onclick = () => { closeSheet($("#lmSheet")); openStation(+b.dataset.st, true); });
+  openSheet($("#lmSheet"));
+  const sheetH = innerWidth >= 900 ? 0 : Math.min(H * 0.72, 420);
+  flyTo(L.wx + (innerWidth >= 900 ? 200 / Math.max(cam.s, 14) : 0), L.wy, Math.max(cam.s, 14), 600, innerWidth >= 900 ? 0 : sheetH / 2 - 40);
+}
+function ctxSwap(c, fn) { const old = ctx; ctx = c; try { fn(); } finally { ctx = old; } }
+
+/* ───────── 역 시트 ───────── */
+let curSt = null;
+function openStation(i, fly) {
+  curSt = ST[i]; selected = i;
+  $("#stName").textContent = disp(curSt);
+  const recs = REC_MAP.get(curSt.id) || [];
+  $("#stSub").textContent = [subOf(curSt), recs.length ? `추억 ${recs.length}개` : "", curSt.a ? "위치 대략" : ""].filter(Boolean).join(" · ");
+  $("#stBadges").innerHTML = curSt.lines.map(l => `<button class="lb big" data-l="${l.id}" style="background:${l.color}" title="${esc(l.name)} 보기">${esc(l.name.replace(/^(서울|수도권|부산|대구|광주|대전|인천) (?=\d)/, "$1 "))}</button>`).join("");
+  $("#stBadges").querySelectorAll("[data-l]").forEach(b => b.onclick = () => { closeSheet($("#stSheet")); setFocusLine(b.dataset.l, true); });
+  renderWish();
+  renderRecs();
+  openSheet($("#stSheet"));
+  $("#stSheet .sheetBody").scrollTop = 0;
+  focusStation(i, fly ? 650 : 380);
+  draw();
+}
+function renderWish() {
+  const on = WISH.has(curSt.id);
+  $("#wishBtn").textContent = on ? "★ 가고 싶어" : "☆ 가고 싶어";
+  $("#wishBtn").classList.toggle("on", on);
+}
+$("#wishBtn").onclick = async () => {
+  if (WISH.has(curSt.id)) WISH.delete(curSt.id); else { WISH.add(curSt.id); toast("가고 싶은 역에 담았어"); }
+  await DB.put("meta", { k: "wish", v: [...WISH] });
+  renderWish(); draw();
+};
+const DOW = "일월화수목금토";
+function fmtDate(d) {
+  if (!d) return "";
+  const [y, m, dd] = d.split("-").map(Number); const dt = new Date(y, m - 1, dd);
+  return `${y}년 ${m}월 ${dd}일 (${DOW[dt.getDay()]})`;
+}
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function sortRecs(a) { return a.sort((x, y) => (y.date || "").localeCompare(x.date || "") || (y.created - x.created)); }
+async function renderRecs() {
+  const list = $("#recList");
+  const recs = sortRecs([...(REC_MAP.get(curSt.id) || [])]);
+  if (!recs.length) {
+    list.innerHTML = `<div class="emptyRec">${STAMP}아직 이 역에는 우리 추억이 없어.<br>같이 와 봤다면 사진이랑 메모를 남겨줘.</div>`;
+    return;
+  }
+  list.innerHTML = recs.map(r => `<article class="rec" data-id="${r.id}">
+    <div class="d">${esc(fmtDate(r.date))}${dday(r.date) ? ` · ${dday(r.date)}` : ""}</div>
+    ${r.title ? `<div class="t">${esc(r.title)}</div>` : ""}
+    ${r.photos.length ? `<div class="ph n${Math.min(r.photos.length, 3)}">${r.photos.map((p, k) => `<img data-p="${p}" data-k="${k}" alt="">`).join("")}</div>` : ""}
+    ${r.memo ? `<div class="m">${esc(r.memo)}</div>` : ""}
+    <div class="ops"><button data-ed="${r.id}">수정</button></div>
+  </article>`).join("");
+  list.querySelectorAll("img[data-p]").forEach(async img => {
+    img.src = await photoURL(img.dataset.p, img.closest(".ph").classList.contains("n1") ? "full" : "thumb");
+    img.onclick = () => { const r = RECS.find(x => x.id === img.closest(".rec").dataset.id); openViewer(r.photos, +img.dataset.k); };
+  });
+  list.querySelectorAll("[data-ed]").forEach(b => b.onclick = () => openEditor(RECS.find(x => x.id === b.dataset.ed)));
+}
+function dday(date) {
+  if (!SETTINGS.day || !date) return "";
+  const a = new Date(SETTINGS.day + "T00:00:00"), b = new Date(date + "T00:00:00");
+  const n = Math.round((b - a) / 864e5) + 1;
+  return n >= 1 ? `D+${n}` : "";
+}
+
+/* ───────── 기록 편집 ───────── */
+let edRec = null, edPhotos = [];   // edPhotos: [{id, url, isNew, full, thumb}]
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+async function openEditor(rec) {
+  edRec = rec || null;
+  $("#edTitle").textContent = rec ? "추억 고치기" : "추억 남기기";
+  $("#edSub").textContent = disp(curSt) + " · " + subOf(curSt);
+  $("#edDate").value = rec ? rec.date : today();
+  $("#edHead").value = rec ? rec.title || "" : "";
+  $("#edMemo").value = rec ? rec.memo || "" : "";
+  $("#edDel").classList.toggle("hidden", !rec);
+  edPhotos = [];
+  if (rec) for (const id of rec.photos) edPhotos.push({ id, url: await photoURL(id) });
+  renderEdPhotos();
+  openSheet($("#edSheet"));
+  $("#edSheet .sheetBody").scrollTop = 0;
+}
+function renderEdPhotos() {
+  const g = $("#edPhotos");
+  g.innerHTML = edPhotos.map((p, k) => `<div class="cell"><img src="${p.url}" alt=""><button data-rm="${k}" aria-label="사진 빼기">✕</button></div>`).join("") +
+    `<button class="add" id="edAdd">＋<small>사진 추가</small></button>`;
+  g.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { edPhotos.splice(+b.dataset.rm, 1); renderEdPhotos(); });
+  $("#edAdd").onclick = () => $("#edFile").click();
+}
+$("#addRec").onclick = () => openEditor(null);
+function loadImg(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => res({ im, u }); im.onerror = () => { URL.revokeObjectURL(u); rej(new Error("이미지를 못 읽었어")); };
+    im.src = u;
+  });
+}
+function shrink(im, max, q) {
+  const k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+  const c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+  c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, "image/jpeg", q));
+}
+$("#edFile").addEventListener("change", async e => {
+  const files = [...e.target.files]; e.target.value = "";
+  if (!files.length) return;
+  $("#edBusy").classList.remove("hidden");
+  for (const f of files) {
+    try {
+      const { im, u } = await loadImg(f);
+      const full = await shrink(im, 1600, 0.85), thumb = await shrink(im, 420, 0.8);
+      URL.revokeObjectURL(u);
+      edPhotos.push({ id: uid(), url: URL.createObjectURL(thumb), isNew: true, full, thumb });
+      renderEdPhotos();
+    } catch (err) { toast("사진 하나를 못 읽었어"); }
+  }
+  $("#edBusy").classList.add("hidden");
+});
+$("#edSave").onclick = async () => {
+  const memo = $("#edMemo").value.trim(), title = $("#edHead").value.trim();
+  if (!memo && !title && !edPhotos.length) { toast("사진이나 메모를 하나는 남겨줘!"); return; }
+  const btn = $("#edSave"); btn.disabled = true;
+  try {
+    for (const p of edPhotos) if (p.isNew) { await DB.put("photos", { id: p.id, full: p.full, thumb: p.thumb }); urlCache.set(p.id + ":thumb", p.url); p.isNew = false; }
+    const old = edRec ? edRec.photos : [];
+    const keep = new Set(edPhotos.map(p => p.id));
+    for (const id of old) if (!keep.has(id)) await DB.del("photos", id);
+    const rec = edRec ? Object.assign(edRec, { date: $("#edDate").value || today(), title, memo, photos: edPhotos.map(p => p.id), updated: Date.now() })
+      : { id: uid(), station: curSt.id, date: $("#edDate").value || today(), title, memo, photos: edPhotos.map(p => p.id), created: Date.now(), updated: Date.now() };
+    await DB.put("records", rec);
+    if (!edRec) RECS.push(rec);
+    const first = (REC_MAP.get(curSt.id) || []).length === 0;
+    reindex();
+    closeSheet($("#edSheet"));
+    openStation(curSt.i);
+    toast(first ? `${disp(curSt)}에 첫 도장 쾅!` : "저장했어");
+  } catch (err) { toast("저장 실패: " + err.message); }
+  btn.disabled = false;
+};
+let delArm = 0;
+$("#edDel").onclick = async () => {
+  if (!edRec) return;
+  const btn = $("#edDel");
+  if (Date.now() - delArm > 4000) { delArm = Date.now(); btn.textContent = "정말 지울까? 한 번 더 누르면 사진까지 지워져"; setTimeout(() => { btn.textContent = "이 추억 지우기"; }, 4000); return; }
+  delArm = 0; btn.textContent = "이 추억 지우기";
+  for (const id of edRec.photos) await DB.del("photos", id);
+  await DB.del("records", edRec.id);
+  RECS = RECS.filter(r => r !== edRec);
+  reindex(); closeSheet($("#edSheet")); openStation(curSt.i); toast("지웠어");
+};
+
+/* ───────── 사진 뷰어 ───────── */
+let vList = [], vK = 0;
+async function openViewer(list, k) { vList = list; vK = k; $("#viewer").classList.remove("hidden"); showV(); }
+async function showV() {
+  $("#vImg").src = await photoURL(vList[vK], "full");
+  $("#vCount").textContent = vList.length > 1 ? `${vK + 1} / ${vList.length}` : "";
+  $("#vPrev").classList.toggle("hidden", vList.length < 2); $("#vNext").classList.toggle("hidden", vList.length < 2);
+}
+function closeViewer() { $("#viewer").classList.add("hidden"); $("#vImg").removeAttribute("src"); }
+$("#vClose").onclick = closeViewer;
+$("#vPrev").onclick = e => { e.stopPropagation(); vK = (vK - 1 + vList.length) % vList.length; showV(); };
+$("#vNext").onclick = e => { e.stopPropagation(); vK = (vK + 1) % vList.length; showV(); };
+$("#vImg").onclick = closeViewer;
+{ let x0 = null; $("#viewer").addEventListener("touchstart", e => x0 = e.touches[0].clientX, { passive: true });
+  $("#viewer").addEventListener("touchend", e => { if (x0 == null || vList.length < 2) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) { vK = (vK + (dx < 0 ? 1 : -1) + vList.length) % vList.length; showV(); } x0 = null; }); }
+
+/* ───────── 앨범 / 통계 ───────── */
+let albTab = "time";
+function updateCounts() {
+  const n = REC_MAP.size;
+  $("#fabCount").textContent = n ? `${n}역` : "추억";
+}
+$("#fabAlbum").onclick = () => { renderAlbum(); openSheet($("#albSheet")); };
+$("#albTabs").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; albTab = b.dataset.t; renderAlbum(); });
+function renderAlbum() {
+  const names = [SETTINGS.a, SETTINGS.b].filter(Boolean);
+  $("#albSub").textContent = names.length === 2 ? `${names[0]} & ${names[1]}` : "함께 다닌 역들";
+  const photos = RECS.reduce((a, r) => a + r.photos.length, 0);
+  $("#albStats").innerHTML = `<div class="stat"><b>${REC_MAP.size}</b><span>함께 간 역</span></div><div class="stat"><b>${RECS.length}</b><span>추억</span></div><div class="stat"><b>${photos}</b><span>사진</span></div>`;
+  document.querySelectorAll("#albTabs button").forEach(b => b.classList.toggle("on", b.dataset.t === albTab));
+  const body = $("#albBody");
+  if (albTab === "time") {
+    if (!RECS.length) { body.innerHTML = `<div class="emptyRec">${STAMP}아직 기록이 없어.<br>지도에서 역을 눌러 첫 추억을 남겨봐.</div>`; return; }
+    const recs = sortRecs([...RECS]);
+    let html = "", lastM = "";
+    for (const r of recs) {
+      const m = (r.date || "").slice(0, 7);
+      if (m !== lastM) { const [y, mm] = m.split("-"); html += `<div class="month">${y}년 ${+mm}월</div>`; lastM = m; }
+      const t = ST[ST_BY_ID[r.station]];
+      html += `<button class="alb" data-st="${t ? t.i : ""}"><div class="th">${r.photos[0] ? `<img data-p="${r.photos[0]}" alt="">` : "🚉"}</div><div class="tx"><b>${esc(t ? disp(t) : r.station)}${r.title ? ` · ${esc(r.title)}` : ""}</b><span>${esc(fmtDate(r.date))}${dday(r.date) ? " · " + dday(r.date) : ""}</span><span>${esc((r.memo || "").split("\n")[0])}</span></div></button>`;
+    }
+    body.innerHTML = html;
+    body.querySelectorAll("img[data-p]").forEach(async im => im.src = await photoURL(im.dataset.p));
+  } else if (albTab === "lines") {
+    const rows = LN.map(l => { const sts = lineStations(l); return { l, n: sts.length, v: sts.filter(visited).length }; })
+      .sort((a, b) => (b.v / b.n) - (a.v / a.n) || b.v - a.v || (a.l.kind === "metro" ? -1 : 1));
+    body.innerHTML = rows.map(r => `<button class="prog" data-l="${r.l.id}">${badge(r.l)}<div class="nm">${esc(r.l.name)}<div class="bar"><i style="width:${(r.v / r.n * 100).toFixed(1)}%;background:${r.l.color}"></i></div></div><span class="num">${r.v}/${r.n}${r.v === r.n ? " 완주" : ""}</span></button>`).join("");
+  } else {
+    const w = [...WISH].map(id => ST[ST_BY_ID[id]]).filter(Boolean);
+    body.innerHTML = w.length ? w.map(t => `<button class="alb" data-st="${t.i}"><div class="th">⭐</div><div class="tx"><b>${esc(disp(t))}</b><span>${t.lines.map(l => esc(l.name)).join(" · ")}</span><span>${visited(t) ? "가 봤어" : "아직 안 가 봤어"}</span></div></button>`).join("")
+      : `<div class="emptyRec">${STAMP}역을 누르고 '가고 싶어'를 눌러두면<br>여기 모아서 보여줄게.</div>`;
+  }
+  body.querySelectorAll("[data-st]").forEach(b => b.onclick = () => { if (b.dataset.st === "") return; closeAll(); openStation(+b.dataset.st, true); });
+  body.querySelectorAll(".prog[data-l]").forEach(b => b.onclick = () => setFocusLine(b.dataset.l, true));
+}
+
+/* ───────── 랜덤 데이트 역 ───────── */
+$("#fabRandom").onclick = () => {
+  const onScreen = ST.filter(t => t.lines.some(lineVisible) && !visited(t) && (!focusLine || t.l.includes(focusLine))).filter(t => { const x = sx(t.wx), y = sy(t.wy); return x > 0 && y > 120 && x < W && y < H; });
+  const pool = onScreen.length ? onScreen : ST.filter(t => !visited(t));
+  if (!pool.length) { toast("모든 역을 다 가 봤어? 대단해!"); return; }
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  toast(`오늘은 ${disp(t)} 어때?`);
+  openStation(t.i, true);
+};
+
+/* ───────── 설정 / D-day ───────── */
+function renderDday() {
+  const el = $("#dday");
+  const names = [SETTINGS.a, SETTINGS.b].filter(Boolean).join(" & ");
+  const d = SETTINGS.day ? dday(today()) : "";
+  el.textContent = d ? `${names ? names + " · " : ""}${d}` : (names || "눌러서 우리 정보 넣기");
+}
+$("#brand").onclick = () => {
+  $("#setA").value = SETTINGS.a || ""; $("#setB").value = SETTINGS.b || ""; $("#setDay").value = SETTINGS.day || "";
+  openSheet($("#setSheet"));
+};
+$("#setSave").onclick = async () => {
+  SETTINGS = { a: $("#setA").value.trim(), b: $("#setB").value.trim(), day: $("#setDay").value };
+  await DB.put("meta", { k: "settings", v: SETTINGS });
+  renderDday(); closeSheet($("#setSheet")); toast("저장했어");
+};
+
+/* 백업 */
+function blobToDataURL(b) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(b); }); }
+async function dataURLToBlob(u) {
+  const [head, b64] = u.split(","); const mime = (head.match(/data:([^;]+)/) || [])[1] || "image/jpeg";
+  const bin = atob(b64), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+$("#bkOut").onclick = async () => {
+  const busy = $("#bkBusy"); busy.classList.remove("hidden"); busy.textContent = "백업 파일 만드는 중…";
+  try {
+    const photos = await DB.all("photos");
+    const parts = [`{"app":"ourmap","version":1,"exported":${JSON.stringify(new Date().toISOString())},"settings":${JSON.stringify(SETTINGS)},"wish":${JSON.stringify([...WISH])},"records":${JSON.stringify(RECS)},"photos":[`];
+    for (let k = 0; k < photos.length; k++) {
+      const p = photos[k];
+      parts.push((k ? "," : "") + JSON.stringify({ id: p.id, full: await blobToDataURL(p.full), thumb: p.thumb ? await blobToDataURL(p.thumb) : null }));
+      busy.textContent = `백업 만드는 중… 사진 ${k + 1}/${photos.length}`;
+    }
+    parts.push("]}");
+    const name = `우리의노선도_백업_${today()}.json`;
+    if (window.OurMapAndroid) {
+      busy.textContent = "저장할 곳을 골라줘";
+      OurMapAndroid.beginFile(name, "application/json");
+      const all = parts.join(""); const CH = 256 * 1024;
+      for (let i = 0; i < all.length; i += CH) OurMapAndroid.appendText(all.slice(i, i + CH));
+      OurMapAndroid.finishFile();
+    } else {
+      const u = URL.createObjectURL(new Blob(parts, { type: "application/json" }));
+      const a = document.createElement("a"); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(u), 4000);
+      busy.textContent = `백업 파일을 내려받았어 (추억 ${RECS.length}개, 사진 ${photos.length}장). 미리보기 화면에서는 저장이 막힐 수 있어서, 백업은 앱에서 해줘.`;
+    }
+  } catch (e) { busy.textContent = "백업 실패: " + e.message; }
+};
+window.__onSaved = ok => { const b = $("#bkBusy"); b.classList.remove("hidden"); b.textContent = ok ? "백업 파일 저장 완료!" : "저장을 취소했어"; };
+$("#bkIn").onclick = () => $("#bkFile").click();
+$("#bkFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const busy = $("#bkBusy"); busy.classList.remove("hidden"); busy.textContent = "불러오는 중…";
+  try {
+    const data = JSON.parse(await f.text());
+    if (data.app !== "ourmap") throw new Error("우리의 노선도 백업 파일이 아니야");
+    let added = 0;
+    for (let k = 0; k < (data.photos || []).length; k++) {
+      const p = data.photos[k];
+      if (await DB.get("photos", p.id)) continue;
+      await DB.put("photos", { id: p.id, full: await dataURLToBlob(p.full), thumb: p.thumb ? await dataURLToBlob(p.thumb) : null });
+      busy.textContent = `사진 불러오는 중… ${k + 1}/${data.photos.length}`;
+    }
+    const have = new Map(RECS.map(r => [r.id, r]));
+    for (const r of data.records || []) {
+      const cur = have.get(r.id);
+      if (!cur) { RECS.push(r); added++; await DB.put("records", r); }
+      else if ((r.updated || 0) > (cur.updated || 0)) { Object.assign(cur, r); await DB.put("records", cur); }
+    }
+    (data.wish || []).forEach(id => WISH.add(id)); await DB.put("meta", { k: "wish", v: [...WISH] });
+    if (!SETTINGS.day && data.settings) { SETTINGS = data.settings; await DB.put("meta", { k: "settings", v: SETTINGS }); renderDday(); }
+    reindex();
+    busy.textContent = `불러오기 완료! 새 추억 ${added}개를 합쳤어`;
+  } catch (err) { busy.textContent = "불러오기 실패: " + err.message; }
+});
+
+/* ───────── 토스트 ───────── */
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2300); }
+
+/* ───────── 시작 ───────── */
+async function init() {
+  readColors();
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { readColors(); draw(); });
+  resize();
+  addEventListener("resize", resize);
+  buildChips();
+  fitStations(ST, 0);
+  try {
+    RECS = (await DB.all("records")) || [];
+    const w = await DB.get("meta", "wish"); if (w) WISH = new Set(w.v);
+    const s = await DB.get("meta", "settings"); if (s) SETTINGS = s.v;
+  } catch (e) { toast("저장소를 열 수 없어: " + e.message); }
+  renderDday();
+  reindex();
+}
+init();
+</script>
+</body>
+</html>
